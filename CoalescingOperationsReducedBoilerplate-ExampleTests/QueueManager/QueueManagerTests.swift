@@ -97,6 +97,16 @@ class QueueManagerTests: XCTestCase {
         XCTAssertEqual(operationB, operationA.coalesceAttemptedOnOperation)
     }
     
+    func test_enqueue_CoalescibleAndNonCoalescibleOperations() {
+        let operationA = CoalescibleOperationSpy()
+        let operationB = NSOperation()
+        
+        queueManager.enqueue(operationA)
+        queueManager.enqueue(operationB)
+        
+        XCTAssertEqual(queueManager.queue.operationCount, 2)
+    }
+    
     // MARK: Existing
     
     func test_existingCoalescibleOperationOnQueue_noMatch() {
@@ -113,5 +123,25 @@ class QueueManagerTests: XCTestCase {
         queueManager.enqueue(operation)
         
         XCTAssertNotNil(queueManager.existingCoalescibleOperationOnQueue(operation.identifier))
+    }
+    
+    func test_existingCoalescibleOperationOnQueue_matchWithCombinationOfCoalescibleAndNonCoalescibleOperations() {
+        let operationA = NSOperation()
+        let operationB = CoalescibleOperationSpy()
+        
+        queueManager.enqueue(operationA)
+        queueManager.enqueue(operationB)
+        
+        XCTAssertNotNil(queueManager.existingCoalescibleOperationOnQueue(operationB.identifier))
+    }
+    
+    func test_existingCoalescibleOperationOnQueue_noMatchWithCombinationOfCoalescibleAndNonCoalescibleOperations() {
+        let operationA = NSOperation()
+        let operationB = CoalescibleOperationSpy()
+        
+        queueManager.enqueue(operationA)
+        queueManager.enqueue(operationB)
+        
+        XCTAssertNil(queueManager.existingCoalescibleOperationOnQueue("nonMatchIdentifier"))
     }
 }

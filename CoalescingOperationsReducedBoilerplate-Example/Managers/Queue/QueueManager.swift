@@ -43,10 +43,15 @@ class QueueManager: NSObject {
     
     func existingCoalescibleOperationOnQueue(identifier: String) -> CoalescibleOperation? {
         let operations = self.queue.operations
-        let existingOperations = (operations as! [CoalescibleOperation]).filter({ (coalescingOperation) -> Bool in
-            return identifier == coalescingOperation.identifier
+        let matchingOperations = (operations).filter({(operation) -> Bool in
+            if operation.isKindOfClass(CoalescibleOperation) {
+                let coalescibleOperation = operation as! CoalescibleOperation
+                return identifier == coalescibleOperation.identifier
+            }
+            
+            return false
         })
         
-        return existingOperations.first
+        return matchingOperations.first as? CoalescibleOperation
     }
 }
