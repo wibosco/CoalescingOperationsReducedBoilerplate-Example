@@ -12,7 +12,7 @@ class CoalescibleOperation: NSOperation {
 
     typealias CompletionClosure = (successful: Bool) -> Void
     
-    // MARK: Accessors
+    // MARK: - Accessors
     
     //Should be set by subclass
     var identifier: String!
@@ -20,7 +20,7 @@ class CoalescibleOperation: NSOperation {
     var completion: (CompletionClosure)?
     private(set) var callBackQueue: NSOperationQueue
     
-    // MARK: Init
+    // MARK: - Init
     
     override init() {
         self.callBackQueue = NSOperationQueue.currentQueue()!
@@ -28,10 +28,55 @@ class CoalescibleOperation: NSOperation {
         super.init()
     }
     
-    // MARK:
+    // MARK: - AsynchronousSupport
+    
+    private var _executing: Bool = false
+    override var executing: Bool {
+        get {
+            return _executing
+        }
+        set {
+            if _executing != newValue {
+                willChangeValueForKey("isExecuting")
+                _executing = newValue
+                didChangeValueForKey("isExecuting")
+            }
+        }
+    }
+    
+    private var _finished: Bool = false;
+    override var finished: Bool {
+        get {
+            return _finished
+        }
+        set {
+            if _finished != newValue {
+                willChangeValueForKey("isFinished")
+                _finished = newValue
+                didChangeValueForKey("isFinished")
+            }
+        }
+    }
     
     override var asynchronous: Bool {
         return true
+    }
+    
+    // MARK: - Lifecycle
+    
+    override func start() {
+        if cancelled {
+            finish()
+            return
+        } else {
+            executing = true;
+            finished = false;
+        }
+    }
+    
+    private func finish() {
+        executing = false
+        finished = true
     }
     
     // MARK: - Coalesce
@@ -55,6 +100,8 @@ class CoalescibleOperation: NSOperation {
     // MARK: - Completion
     
     func didComplete() {
+        finish()
+        
         callBackQueue.addOperationWithBlock {
             if let completion = self.completion {
                 completion(successful: true)

@@ -13,17 +13,17 @@ import Foundation
  */
 class CoalescingExampleOperation: CoalescibleOperation {
     
-    // MARK: Init
+    // MARK: - Init
     
     override init() {
         super.init()
         self.identifier = "coalescingOperationExampleIdentifier"
     }
     
-    // MARK: Main
+    // MARK: - Lifecycle
     
-    override func main() {
-        super.main()
+    override func start() {
+        super.start()
         
         sleep(1)
         

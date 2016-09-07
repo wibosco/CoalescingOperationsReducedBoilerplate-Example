@@ -8,6 +8,29 @@
 
 import XCTest
 
+/**
+ An example subclass of a coalescible operation.
+ */
+class TestCoalescingOperation: CoalescibleOperation {
+    
+    // MARK: - Init
+    
+    override init() {
+        super.init()
+        self.identifier = "testCoalescingOperationExampleIdentifier"
+    }
+    
+    // MARK: - Lifecycle
+    
+    override func start() {
+        super.start()
+        
+        sleep(1)
+        
+        didComplete()
+    }
+}
+
 class CoalescibleOperationTests: XCTestCase {
     
     // MARK: - Tests
@@ -31,23 +54,52 @@ class CoalescibleOperationTests: XCTestCase {
     }
     
     func test_didComplete_callBackOnThreadItWasQueuedOn() {
-        var callBackOnThread: NSOperationQueue!
-        let expectation = expectationWithDescription("Closure called")
+        var callBackOnThreadA: NSOperationQueue!
+        let expectationA = expectationWithDescription("Closure called")
         
         let queue = NSOperationQueue()
         queue.addOperationWithBlock {
-            let operation = CoalescibleOperation()
-            operation.completion = {(successful) in
-                callBackOnThread = NSOperationQueue.currentQueue()!
-                expectation.fulfill()
+            let operationA = CoalescibleOperation()
+            operationA.completion = {(successful) in
+                callBackOnThreadA = NSOperationQueue.currentQueue()!
+                expectationA.fulfill()
             }
             
-            operation.didComplete()
+            operationA.didComplete()
         }
         
+        
+        var callBackOnThreadB: NSOperationQueue!
+        let expectationB = expectationWithDescription("Closure called")
+        
+        let operationB = CoalescibleOperation()
+        operationB.completion = {(successful) in
+            callBackOnThreadB = NSOperationQueue.currentQueue()!
+            expectationB.fulfill()
+        }
+        
+        operationB.didComplete()
+        
         waitForExpectationsWithTimeout(2) { (error) in
-            XCTAssertEqual(callBackOnThread, queue)
-            XCTAssertNotEqual(callBackOnThread, NSOperationQueue.mainQueue())
+            XCTAssertEqual(callBackOnThreadA, queue)
+            XCTAssertNotEqual(callBackOnThreadA, NSOperationQueue.mainQueue())
+            
+            XCTAssertEqual(callBackOnThreadB, NSOperationQueue.mainQueue())
+        }
+    }
+    
+    func test_didComplete_completedOperationLeavesQueue() {
+        let expectation = expectationWithDescription("Operation removed from queue on completion")
+        let operation = TestCoalescingOperation()
+        operation.completion = {(successful) in
+            expectation.fulfill()
+        }
+        
+        let queue = NSOperationQueue()
+        queue.addOperation(operation)
+        
+        waitForExpectationsWithTimeout(2) { (error) in
+            XCTAssertEqual(0, queue.operations.count)
         }
     }
     
@@ -116,5 +168,4 @@ class CoalescibleOperationTests: XCTestCase {
             XCTAssertTrue(operationACalledBack)
         }
     }
-    
 }

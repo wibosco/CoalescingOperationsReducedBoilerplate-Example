@@ -22,7 +22,7 @@ class QueueManager: NSObject {
     
     static let sharedInstance = QueueManager()
     
-    // MARK: Addition
+    // MARK: - Addition
     
     func enqueue(operation: NSOperation) {
         if operation.isKindOfClass(CoalescibleOperation) {
@@ -39,7 +39,7 @@ class QueueManager: NSObject {
         }
     }
     
-    // MARK: Existing
+    // MARK: - Existing
     
     func existingCoalescibleOperationOnQueue(identifier: String) -> CoalescibleOperation? {
         let operations = self.queue.operations
