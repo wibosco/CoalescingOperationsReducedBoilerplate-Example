@@ -8,9 +8,9 @@
 
 import Foundation
 
-class CoalescibleOperation: NSOperation {
-
-    typealias CompletionClosure = (successful: Bool) -> Void
+class CoalescibleOperation: Operation {
+    
+    typealias CompletionClosure = (_ successful: Bool) -> Void
     
     // MARK: - Accessors
     
@@ -18,12 +18,12 @@ class CoalescibleOperation: NSOperation {
     var identifier: String!
     
     var completion: (CompletionClosure)?
-    private(set) var callBackQueue: NSOperationQueue
+    private(set) var callBackQueue: OperationQueue
     
     // MARK: - Init
     
     override init() {
-        self.callBackQueue = NSOperationQueue.currentQueue()!
+        self.callBackQueue = OperationQueue.current!
         
         super.init()
     }
@@ -31,68 +31,81 @@ class CoalescibleOperation: NSOperation {
     // MARK: - AsynchronousSupport
     
     private var _executing: Bool = false
-    override var executing: Bool {
+    override var isExecuting: Bool {
         get {
             return _executing
         }
         set {
             if _executing != newValue {
-                willChangeValueForKey("isExecuting")
+                willChangeValue(forKey: "isExecuting")
                 _executing = newValue
-                didChangeValueForKey("isExecuting")
+                didChangeValue(forKey: "isExecuting")
             }
         }
     }
     
     private var _finished: Bool = false;
-    override var finished: Bool {
+    override var isFinished: Bool {
         get {
             return _finished
         }
         set {
             if _finished != newValue {
-                willChangeValueForKey("isFinished")
+                willChangeValue(forKey: "isFinished")
                 _finished = newValue
-                didChangeValueForKey("isFinished")
+                didChangeValue(forKey: "isFinished")
             }
         }
     }
     
-    override var asynchronous: Bool {
+    override var isAsynchronous: Bool {
         return true
     }
     
     // MARK: - Lifecycle
     
     override func start() {
-        if cancelled {
+        if isCancelled {
             finish()
             return
         } else {
-            executing = true;
-            finished = false;
+            _executing = true;
+            _finished = false;
         }
     }
     
     private func finish() {
-        executing = false
-        finished = true
+        _executing = false
+        _finished = true
     }
     
     // MARK: - Coalesce
     
+    /* Here we are coalescing our operations together. */
+    
     func coalesce(operation: CoalescibleOperation) {
-        // Completion coalescing
+        
+        /* First we create local variables holding the current operations completion closure and the to-be-coalesced operations completion closure (initalCompletionClosure contains the closure’s of any previously coalesced operations).
+         
+         We do so because we are going to override the current operations completion closure with a new closure containing calls to both the closure’s now be held in local variables.
+         */
+        
         let initalCompletionClosure = self.completion
         let additionalCompletionClosure = operation.completion
         
+        /* When this closure is triggered, any nested closures (those held in initalCompletionClosure) will be executed so ensuring that we can coalesce more than two operations. What’s important to note that this method will handle situations were an operation hasn’t provided a completion closure and the other operation has.
+         */
+        
         self.completion = {(successful) in
+            
+            /* Inside the closure, we check that each closure actually exists (these closure’s are optional) and if they exist we trigger them. */
+            
             if let initalCompletionClosure = initalCompletionClosure {
-                initalCompletionClosure(successful: successful)
+                initalCompletionClosure(successful)
             }
             
             if let additionalCompletionClosure = additionalCompletionClosure {
-                additionalCompletionClosure(successful: successful)
+                additionalCompletionClosure(successful)
             }
         }
     }
@@ -102,9 +115,9 @@ class CoalescibleOperation: NSOperation {
     func didComplete() {
         finish()
         
-        callBackQueue.addOperationWithBlock {
+        callBackQueue.addOperation {
             if let completion = self.completion {
-                completion(successful: true)
+                completion(true)
             }
         }
     }

@@ -39,29 +39,29 @@ class CoalescibleOperationTests: XCTestCase {
     
     func test_didComplete_closuresCalled() {
         var operationCalledBack = false
-        let expectation = expectationWithDescription("Closure called")
+        let anExpectation = expectation(description: "Closure called")
         let operation = CoalescibleOperation()
         operation.completion = {(successful) in
             operationCalledBack = true
-            expectation.fulfill()
+            anExpectation.fulfill()
         }
         
         operation.didComplete()
         
-        waitForExpectationsWithTimeout(2) { (error) in
+        waitForExpectations(timeout: 2) { (error) in
             XCTAssertTrue(operationCalledBack)
         }
     }
     
     func test_didComplete_callBackOnThreadItWasQueuedOn() {
-        var callBackOnThreadA: NSOperationQueue!
-        let expectationA = expectationWithDescription("Closure called")
+        var callBackOnThreadA: OperationQueue!
+        let expectationA = expectation(description: "Closure called")
         
-        let queue = NSOperationQueue()
-        queue.addOperationWithBlock {
+        let queue = OperationQueue()
+        queue.addOperation {
             let operationA = CoalescibleOperation()
             operationA.completion = {(successful) in
-                callBackOnThreadA = NSOperationQueue.currentQueue()!
+                callBackOnThreadA = OperationQueue.current!
                 expectationA.fulfill()
             }
             
@@ -69,36 +69,36 @@ class CoalescibleOperationTests: XCTestCase {
         }
         
         
-        var callBackOnThreadB: NSOperationQueue!
-        let expectationB = expectationWithDescription("Closure called")
+        var callBackOnThreadB: OperationQueue!
+        let expectationB = expectation(description: "Closure called")
         
         let operationB = CoalescibleOperation()
         operationB.completion = {(successful) in
-            callBackOnThreadB = NSOperationQueue.currentQueue()!
+            callBackOnThreadB = OperationQueue.current!
             expectationB.fulfill()
         }
         
         operationB.didComplete()
         
-        waitForExpectationsWithTimeout(2) { (error) in
+        waitForExpectations(timeout: 2) { (error) in
             XCTAssertEqual(callBackOnThreadA, queue)
-            XCTAssertNotEqual(callBackOnThreadA, NSOperationQueue.mainQueue())
+            XCTAssertNotEqual(callBackOnThreadA, OperationQueue.main)
             
-            XCTAssertEqual(callBackOnThreadB, NSOperationQueue.mainQueue())
+            XCTAssertEqual(callBackOnThreadB, OperationQueue.main)
         }
     }
     
     func test_didComplete_completedOperationLeavesQueue() {
-        let expectation = expectationWithDescription("Operation removed from queue on completion")
+        let anExpectation = expectation(description: "Operation removed from queue on completion")
         let operation = TestCoalescingOperation()
         operation.completion = {(successful) in
-            expectation.fulfill()
+            anExpectation.fulfill()
         }
         
-        let queue = NSOperationQueue()
+        let queue = OperationQueue()
         queue.addOperation(operation)
         
-        waitForExpectationsWithTimeout(2) { (error) in
+        waitForExpectations(timeout: 2) { (error) in
             XCTAssertEqual(0, queue.operations.count)
         }
     }
@@ -107,7 +107,7 @@ class CoalescibleOperationTests: XCTestCase {
     
     func test_coalesce_mutlipleClosuresCalled() {
         var operationACalledBack = false
-        let expectationA = expectationWithDescription("First callback called")
+        let expectationA = expectation(description: "First callback called")
         let operationA = CoalescibleOperation()
         operationA.completion = {(successful) in
             operationACalledBack = true
@@ -115,17 +115,17 @@ class CoalescibleOperationTests: XCTestCase {
         }
         
         var operationBCalledBack = false
-        let expectationB = expectationWithDescription("Second callback called")
+        let expectationB = expectation(description: "Second callback called")
         let operationB = CoalescibleOperation()
         operationB.completion = {(successful) in
             operationBCalledBack = true
             expectationB.fulfill()
         }
         
-        operationA.coalesce(operationB)
+        operationA.coalesce(operation: operationB)
         operationA.didComplete()
         
-        waitForExpectationsWithTimeout(2) { (error) in
+        waitForExpectations(timeout: 2) { (error) in
             XCTAssertTrue(operationACalledBack)
             XCTAssertTrue(operationBCalledBack)
         }
@@ -135,24 +135,24 @@ class CoalescibleOperationTests: XCTestCase {
         let operationA = CoalescibleOperation()
         
         var operationBCalledBack = false
-        let expectationB = expectationWithDescription("Second callback called")
+        let expectationB = expectation(description: "Second callback called")
         let operationB = CoalescibleOperation()
         operationB.completion = {(successful) in
             operationBCalledBack = true
             expectationB.fulfill()
         }
         
-        operationA.coalesce(operationB)
+        operationA.coalesce(operation: operationB)
         operationA.didComplete()
         
-        waitForExpectationsWithTimeout(2) { (error) in
+        waitForExpectations(timeout: 2) { (error) in
             XCTAssertTrue(operationBCalledBack)
         }
     }
     
     func test_coalesce_firstClosuresCalledWhenSecondIsNotSet() {
         var operationACalledBack = false
-        let expectationA = expectationWithDescription("First callback called")
+        let expectationA = expectation(description: "First callback called")
         let operationA = CoalescibleOperation()
         operationA.completion = {(successful) in
             operationACalledBack = true
@@ -161,10 +161,10 @@ class CoalescibleOperationTests: XCTestCase {
         
         let operationB = CoalescibleOperation()
         
-        operationA.coalesce(operationB)
+        operationA.coalesce(operation: operationB)
         operationA.didComplete()
         
-        waitForExpectationsWithTimeout(2) { (error) in
+        waitForExpectations(timeout: 2) { (error) in
             XCTAssertTrue(operationACalledBack)
         }
     }

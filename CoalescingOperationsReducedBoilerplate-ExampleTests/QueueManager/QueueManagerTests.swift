@@ -42,7 +42,7 @@ class QueueManagerTests: XCTestCase {
         super.setUp()
         
         queueManager = QueueManager()
-        queueManager.queue.suspended = true
+        queueManager.queue.isSuspended = true
     }
     
     // MARK: - Tests
@@ -50,19 +50,19 @@ class QueueManagerTests: XCTestCase {
     // MARK: Enqueue
     
     func test_enqueue_count() {
-        let operationA = NSOperation()
+        let operationA = Operation()
         
-        queueManager.enqueue(operationA)
+        queueManager.enqueue(operation: operationA)
         
         XCTAssertEqual(queueManager.queue.operationCount, 1)
     }
     
     func test_enqueue_nonCoalescibleOperations() {
-        let operationA = NSOperation()
-        let operationB = NSOperation()
+        let operationA = Operation()
+        let operationB = Operation()
         
-        queueManager.enqueue(operationA)
-        queueManager.enqueue(operationB)
+        queueManager.enqueue(operation: operationA)
+        queueManager.enqueue(operation: operationB)
         
         XCTAssertEqual(queueManager.queue.operationCount, 2)
     }
@@ -71,8 +71,8 @@ class QueueManagerTests: XCTestCase {
         let operationA = CoalescibleOperationSpy()
         let operationB = CoalescibleOperationSpy()
         
-        queueManager.enqueue(operationA)
-        queueManager.enqueue(operationB)
+        queueManager.enqueue(operation: operationA)
+        queueManager.enqueue(operation: operationB)
         
         XCTAssertEqual(queueManager.queue.operationCount, 1)
     }
@@ -81,8 +81,8 @@ class QueueManagerTests: XCTestCase {
         let operationA = CoalescibleOperationSpy()
         let operationB = CoalescibleOperationSpy()
         
-        queueManager.enqueue(operationA)
-        queueManager.enqueue(operationB)
+        queueManager.enqueue(operation: operationA)
+        queueManager.enqueue(operation: operationB)
         
         XCTAssertTrue(operationA.coalesceAttempted)
     }
@@ -91,18 +91,18 @@ class QueueManagerTests: XCTestCase {
         let operationA = CoalescibleOperationSpy()
         let operationB = CoalescibleOperationSpy()
         
-        queueManager.enqueue(operationA)
-        queueManager.enqueue(operationB)
+        queueManager.enqueue(operation: operationA)
+        queueManager.enqueue(operation: operationB)
         
         XCTAssertEqual(operationB, operationA.coalesceAttemptedOnOperation)
     }
     
     func test_enqueue_CoalescibleAndNonCoalescibleOperations() {
         let operationA = CoalescibleOperationSpy()
-        let operationB = NSOperation()
+        let operationB = Operation()
         
-        queueManager.enqueue(operationA)
-        queueManager.enqueue(operationB)
+        queueManager.enqueue(operation: operationA)
+        queueManager.enqueue(operation: operationB)
         
         XCTAssertEqual(queueManager.queue.operationCount, 2)
     }
@@ -112,36 +112,36 @@ class QueueManagerTests: XCTestCase {
     func test_existingCoalescibleOperationOnQueue_noMatch() {
         let operation = CoalescibleOperationSpy()
         
-        queueManager.enqueue(operation)
+        queueManager.enqueue(operation: operation)
         
-        XCTAssertNil(queueManager.existingCoalescibleOperationOnQueue("nonMatchIdentifier"))
+        XCTAssertNil(queueManager.existingCoalescibleOperationOnQueue(identifier: "nonMatchIdentifier"))
     }
     
     func test_existingCoalescibleOperationOnQueue_match() {
         let operation = CoalescibleOperationSpy()
         
-        queueManager.enqueue(operation)
+        queueManager.enqueue(operation: operation)
         
-        XCTAssertNotNil(queueManager.existingCoalescibleOperationOnQueue(operation.identifier))
+        XCTAssertNotNil(queueManager.existingCoalescibleOperationOnQueue(identifier: operation.identifier))
     }
     
     func test_existingCoalescibleOperationOnQueue_matchWithCombinationOfCoalescibleAndNonCoalescibleOperations() {
-        let operationA = NSOperation()
+        let operationA = Operation()
         let operationB = CoalescibleOperationSpy()
         
-        queueManager.enqueue(operationA)
-        queueManager.enqueue(operationB)
+        queueManager.enqueue(operation: operationA)
+        queueManager.enqueue(operation: operationB)
         
-        XCTAssertNotNil(queueManager.existingCoalescibleOperationOnQueue(operationB.identifier))
+        XCTAssertNotNil(queueManager.existingCoalescibleOperationOnQueue(identifier: operationB.identifier))
     }
     
     func test_existingCoalescibleOperationOnQueue_noMatchWithCombinationOfCoalescibleAndNonCoalescibleOperations() {
-        let operationA = NSOperation()
+        let operationA = Operation()
         let operationB = CoalescibleOperationSpy()
         
-        queueManager.enqueue(operationA)
-        queueManager.enqueue(operationB)
+        queueManager.enqueue(operation: operationA)
+        queueManager.enqueue(operation: operationB)
         
-        XCTAssertNil(queueManager.existingCoalescibleOperationOnQueue("nonMatchIdentifier"))
+        XCTAssertNil(queueManager.existingCoalescibleOperationOnQueue(identifier: "nonMatchIdentifier"))
     }
 }
