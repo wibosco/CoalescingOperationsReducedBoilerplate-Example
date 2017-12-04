@@ -10,12 +10,12 @@ import XCTest
 
 class QueueManagerSpy: QueueManager {
     
-    var enqueuedOperation: NSOperation!
+    var enqueuedOperation: Operation!
     var numberOfTimesEnqueuedWasCalled = 0
     
     // MARK: - Overrides
     
-    override func enqueue(operation: NSOperation) {
+    override func enqueue(operation: Operation) {
         enqueuedOperation = operation
         
         numberOfTimesEnqueuedWasCalled += 1
@@ -41,20 +41,20 @@ class CoalescingManagerTests: XCTestCase {
     // MARK: Added
     
     func test_addExampleCoalescingOperation_multipleOperationsEnqueued() {
-        CoalescingExampleManager.addExampleCoalescingOperation(queueManager, completion: nil)
-        CoalescingExampleManager.addExampleCoalescingOperation(queueManager, completion: nil)
+        CoalescingExampleManager.addExampleCoalescingOperation(queueManager: queueManager, completion: nil)
+        CoalescingExampleManager.addExampleCoalescingOperation(queueManager: queueManager, completion: nil)
 
         XCTAssertEqual(2, queueManager.numberOfTimesEnqueuedWasCalled)
     }
     
     func test_addExampleCoalescingOperation_typeOfOperation() {
-        CoalescingExampleManager.addExampleCoalescingOperation(queueManager, completion: nil)
+        CoalescingExampleManager.addExampleCoalescingOperation(queueManager: queueManager, completion: nil)
         
-        XCTAssertTrue(queueManager.enqueuedOperation.isKindOfClass(CoalescingExampleOperation))
+        XCTAssertTrue(queueManager.enqueuedOperation.isKind(of: CoalescingExampleOperation.self))
     }
     
     func test_addExampleCoalescingOperation_completionSet() {
-        CoalescingExampleManager.addExampleCoalescingOperation(queueManager) { (successful) in
+        CoalescingExampleManager.addExampleCoalescingOperation(queueManager: queueManager) { (successful) in
             
         }
         

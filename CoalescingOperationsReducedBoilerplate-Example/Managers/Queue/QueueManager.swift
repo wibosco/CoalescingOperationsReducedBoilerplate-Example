@@ -12,8 +12,8 @@ class QueueManager: NSObject {
     
     // MARK: - Accessors
     
-    lazy var queue: NSOperationQueue = {
-        let queue = NSOperationQueue()
+    lazy var queue: OperationQueue = {
+        let queue = OperationQueue()
         
         return queue;
     }()
@@ -24,12 +24,12 @@ class QueueManager: NSObject {
     
     // MARK: - Addition
     
-    func enqueue(operation: NSOperation) {
-        if operation.isKindOfClass(CoalescibleOperation) {
+    func enqueue(operation: Operation) {
+        if operation.isKind(of: CoalescibleOperation.self) {
             let coalescibleOperation = operation as! CoalescibleOperation
             
-            if let existingCoalescibleOperation = existingCoalescibleOperationOnQueue(coalescibleOperation.identifier){
-                existingCoalescibleOperation.coalesce(coalescibleOperation)
+            if let existingCoalescibleOperation = existingCoalescibleOperationOnQueue(identifier: coalescibleOperation.identifier){
+                existingCoalescibleOperation.coalesce(operation: coalescibleOperation)
             } else {
                 queue.addOperation(coalescibleOperation)
             }
@@ -44,7 +44,7 @@ class QueueManager: NSObject {
     func existingCoalescibleOperationOnQueue(identifier: String) -> CoalescibleOperation? {
         let operations = self.queue.operations
         let matchingOperations = (operations).filter({(operation) -> Bool in
-            if operation.isKindOfClass(CoalescibleOperation) {
+            if operation.isKind(of: CoalescibleOperation.self) {
                 let coalescibleOperation = operation as! CoalescibleOperation
                 return identifier == coalescibleOperation.identifier
             }

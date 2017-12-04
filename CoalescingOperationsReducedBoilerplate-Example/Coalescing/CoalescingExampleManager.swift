@@ -20,6 +20,6 @@ class CoalescingExampleManager: NSObject {
     class func addExampleCoalescingOperation(queueManager: QueueManager = QueueManager.sharedInstance, completion: (CoalescibleOperation.CompletionClosure)?) {
         let operation = CoalescingExampleOperation()
         operation.completion = completion
-        queueManager.enqueue(operation)
+        queueManager.enqueue(operation: operation)
     }
 }
