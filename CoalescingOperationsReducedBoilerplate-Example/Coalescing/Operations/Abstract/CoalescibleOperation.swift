@@ -98,7 +98,8 @@ class CoalescibleOperation: Operation {
         
         self.completion = {(successful) in
             
-            /* Inside the closure, we check that each closure actually exists (these closure’s are optional) and if they exist we trigger them. */
+            /* Inside the closure, we check that each closure actually exists (these closure’s are optional) and if they exist we trigger them.
+             */
             
             if let initalCompletionClosure = initalCompletionClosure {
                 initalCompletionClosure(successful)
