@@ -8,22 +8,23 @@
 
 import Foundation
 
-class CoalescingExampleOperation: CoalescibleOperation {
+class CoalescingExampleOperation: DefaultCoalescibleOperation<Bool>, @unchecked Sendable {
     
     // MARK: - Init
     
-    override init() {
-        super.init()
-        self.identifier = "coalescingOperationExampleIdentifier"
+    init(completionHandler: @escaping  (_ result: Result<Bool, Error>) -> Void) {
+        super.init(identifier: "CoalescingOperationExampleIdentifier",
+                   completionHandler: completionHandler)
     }
     
     // MARK: - Lifecycle
     
-    override func start() {
-        super.start()
+    override func main() {
+        super.main()
         
-        sleep(1)
+        // Do work here
+        sleep(5)
         
-        didComplete()
+        complete(result: .success(true))
     }
 }

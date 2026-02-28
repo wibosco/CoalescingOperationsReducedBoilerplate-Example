@@ -8,13 +8,27 @@
 
 import Foundation
 
-class CoalescingExampleManager: NSObject {
+protocol CoalescingExampleManager {
+    func addExampleCoalescingOperation(completionHandler: @escaping (_ result: Result<Bool, Error>) -> Void)
+}
+
+final class DefaultCoalescingExampleManager: CoalescingExampleManager {
+    private let queueManager: OperationQueueManager
+    private let factory: CoalescingOperationFactory
+    
+    // MARK: - Init
+    
+    init(queueManager: OperationQueueManager,
+         factory: CoalescingOperationFactory) {
+        self.queueManager = queueManager
+        self.factory = factory
+    }
     
     // MARK: - Add
     
-    class func addExampleCoalescingOperation(queueManager: QueueManager = QueueManager.sharedInstance, completion: (CoalescibleOperation.CompletionClosure)?) {
-        let operation = CoalescingExampleOperation()
-        operation.completion = completion
+    func addExampleCoalescingOperation(completionHandler: @escaping (_ result: Result<Bool, Error>) -> Void) {
+        let operation = factory.createExampleOperation(completionHandler: completionHandler)
+        
         queueManager.enqueue(operation: operation)
     }
 }

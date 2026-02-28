@@ -8,54 +8,67 @@
 
 import Foundation
 
-class CoalescibleOperation: Operation {
+protocol CoalescibleOperation<T> {
+    associatedtype T
+
+    var identifier: String { get }
+    var completionHandler: (_ result: Result<T, Error>) -> Void { get }
+    var callBackQueue: OperationQueue { get }
     
-    typealias CompletionClosure = (_ successful: Bool) -> Void
-    
-    // MARK: - Accessors
-    
-    //Should be set by subclass
-    var identifier: String!
-    
-    var completion: (CompletionClosure)?
-    private(set) var callBackQueue: OperationQueue
+    func complete(result: Result<T, Error>)
+    func coalesce(operation: any CoalescibleOperation<T>)
+}
+
+class DefaultCoalescibleOperation<T>: Operation, CoalescibleOperation, @unchecked Sendable {
+    let identifier: String
+    private(set) var completionHandler: (_ result: Result<T, Error>) -> Void
+    let callBackQueue: OperationQueue
     
     // MARK: - Init
     
-    override init() {
-        self.callBackQueue = OperationQueue.current!
+    init(identifier: String,
+         callBackQueue: OperationQueue = OperationQueue.current ?? .main,
+         completionHandler: @escaping (_ result: Result<T, Error>) -> Void) {
+        self.identifier = identifier
+        self.callBackQueue = callBackQueue
+        self.completionHandler = { result in
+            callBackQueue.addOperation {
+                completionHandler(result)
+            }
+        }
         
         super.init()
     }
     
-    // MARK: - AsynchronousSupport
+    // MARK: - State
     
-    private var _executing: Bool = false
-    override var isExecuting: Bool {
-        get {
-            return _executing
+    private enum State: String {
+        case ready = "isReady"
+        case executing = "isExecuting"
+        case finished = "isFinished"
+    }
+    
+    private var state = State.ready {
+        willSet {
+            willChangeValue(forKey: newValue.rawValue)
+            willChangeValue(forKey: state.rawValue)
         }
-        set {
-            if _executing != newValue {
-                willChangeValue(forKey: "isExecuting")
-                _executing = newValue
-                didChangeValue(forKey: "isExecuting")
-            }
+        didSet {
+            didChangeValue(forKey: oldValue.rawValue)
+            didChangeValue(forKey: state.rawValue)
         }
     }
     
-    private var _finished: Bool = false;
+    override var isReady: Bool {
+        return super.isReady && state == .ready
+    }
+    
+    override var isExecuting: Bool {
+        return state == .executing
+    }
+    
     override var isFinished: Bool {
-        get {
-            return _finished
-        }
-        set {
-            if _finished != newValue {
-                willChangeValue(forKey: "isFinished")
-                _finished = newValue
-                didChangeValue(forKey: "isFinished")
-            }
-        }
+        return state == .finished
     }
     
     override var isAsynchronous: Bool {
@@ -65,46 +78,50 @@ class CoalescibleOperation: Operation {
     // MARK: - Lifecycle
     
     override func start() {
-        if isCancelled {
+        guard !isCancelled else {
             finish()
             return
-        } else {
-            _executing = true;
-            _finished = false;
         }
+        
+        if !isExecuting {
+            state = .executing
+        }
+        
+        main()
     }
     
     private func finish() {
-        _executing = false
-        _finished = true
+        state = .finished
+    }
+    
+    func complete(result: Result<T, Error>) {
+        finish()
+    
+        if !isCancelled {
+            completionHandler(result)
+        }
+    }
+    
+    override func cancel() {
+        super.cancel()
+        
+        finish()
     }
     
     // MARK: - Coalesce
     
-    func coalesce(operation: CoalescibleOperation) {
-        let initalCompletionClosure = self.completion
-        let additionalCompletionClosure = operation.completion
+    func coalesce(operation: any CoalescibleOperation<T>) {
+        let initialCompletionClosure = self.completionHandler
+        let initialCallBackQueue = self.callBackQueue
+        let additionalCompletionClosure = operation.completionHandler
+        let additionalCallBackQueue = operation.callBackQueue
         
-        self.completion = {(successful) in
-
-            if let initalCompletionClosure = initalCompletionClosure {
-                initalCompletionClosure(successful)
+        self.completionHandler = { result in
+            initialCallBackQueue.addOperation {
+                initialCompletionClosure(result)
             }
-            
-            if let additionalCompletionClosure = additionalCompletionClosure {
-                additionalCompletionClosure(successful)
-            }
-        }
-    }
-    
-    // MARK: - Completion
-    
-    func didComplete() {
-        finish()
-        
-        callBackQueue.addOperation {
-            if let completion = self.completion {
-                completion(true)
+            additionalCallBackQueue.addOperation {
+                additionalCompletionClosure(result)
             }
         }
     }
