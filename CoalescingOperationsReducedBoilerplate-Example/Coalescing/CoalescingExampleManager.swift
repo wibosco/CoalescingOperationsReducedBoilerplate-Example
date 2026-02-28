@@ -8,11 +8,6 @@
 
 import Foundation
 
-/**
- An example manager that handles queuing operations.
-
- It exists as we don't really want our VCs to know anything about the queue.
- */
 class CoalescingExampleManager: NSObject {
     
     // MARK: - Add

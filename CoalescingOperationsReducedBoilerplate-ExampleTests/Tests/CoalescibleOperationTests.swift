@@ -6,30 +6,10 @@
 //  Copyright © 2016 Boles. All rights reserved.
 //
 
+import Foundation
 import XCTest
 
-/**
- An example subclass of a coalescible operation.
- */
-class TestCoalescingOperation: CoalescibleOperation {
-    
-    // MARK: - Init
-    
-    override init() {
-        super.init()
-        self.identifier = "testCoalescingOperationExampleIdentifier"
-    }
-    
-    // MARK: - Lifecycle
-    
-    override func start() {
-        super.start()
-        
-        sleep(1)
-        
-        didComplete()
-    }
-}
+@testable import CoalescingOperationsReducedBoilerplate_Example
 
 class CoalescibleOperationTests: XCTestCase {
     

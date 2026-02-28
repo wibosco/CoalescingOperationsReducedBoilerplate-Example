@@ -1,6 +1,0 @@
-language: objective-c
-
-osx_image: xcode7.3
-
-script:
-   xcodebuild -project CoalescingOperationsReducedBoilerplate-Example.xcodeproj -scheme CoalescingOperationsReducedBoilerplate-Example test -sdk iphonesimulator

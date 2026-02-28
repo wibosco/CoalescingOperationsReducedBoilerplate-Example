@@ -6,29 +6,10 @@
 //  Copyright © 2016 Boles. All rights reserved.
 //
 
+import Foundation
 import XCTest
 
-class CoalescibleOperationSpy: CoalescibleOperation {
-    
-    // MARK: Properties
-    
-    var coalesceAttempted = false
-    var coalesceAttemptedOnOperation: CoalescibleOperation!
-    
-    // MARK: Init
-    
-    override init() {
-        super.init()
-        self.identifier = "coalescibleOperationSpy"
-    }
-    
-    // MARK: Coalesce
-    
-    override func coalesce(operation: CoalescibleOperation) {
-        coalesceAttempted = true
-        coalesceAttemptedOnOperation = operation
-    }
-}
+@testable import CoalescingOperationsReducedBoilerplate_Example
 
 class QueueManagerTests: XCTestCase {
     

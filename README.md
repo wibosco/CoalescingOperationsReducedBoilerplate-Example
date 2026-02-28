@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/wibosco/CoalescingOperationsReducedBoilerplate-Example.svg)](https://travis-ci.org/wibosco/CoalescingOperationsReducedBoilerplate-Example)
-<a href="https://twitter.com/wibosco"><img src="https://img.shields.io/badge/twitter-@wibosco-blue.svg?style=flat" alt="Twitter: @wibosco" /></a>
+[![Build](https://github.com/wibosco/CoalescingOperationsReducedBoilerplate-Example/actions/workflows/swift.yml/badge.svg)](https://github.com/wibosco/CoalescingOperationsReducedBoilerplate-Example/actions/workflows/swift.yml)
+<a href="https://swift.org"><img src="https://img.shields.io/badge/Swift-4-orange.svg?style=flat" alt="Swift" /></a>
+[![License](http://img.shields.io/badge/License-MIT-green.svg?style=flat)](https://github.com/wibosco/CoalescingOperationsReducedBoilerplate-Example/blob/main/LICENSE)
+
 
 # CoalescingOperationsReducedBoilerplate-Example
-An example project to show how it's possible to coalesce NSOperation subclasses's callbacks with reduced boilerplate compared to previous examples, as shown in this article - https://williamboles.com/removing-bolierplate-when-coalescing-nsoperations/
-
-
+An example project to show how it's possible to coalesce `NSOperation` instances to reduce duplicate work, as shown in this post - https://williamboles.com/removing-bolierplate-when-coalescing-nsoperations/

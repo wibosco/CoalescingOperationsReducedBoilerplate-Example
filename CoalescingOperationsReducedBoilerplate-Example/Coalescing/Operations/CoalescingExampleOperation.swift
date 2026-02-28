@@ -8,9 +8,6 @@
 
 import Foundation
 
-/**
- An example subclass of a coalescible operation.
- */
 class CoalescingExampleOperation: CoalescibleOperation {
     
     // MARK: - Init

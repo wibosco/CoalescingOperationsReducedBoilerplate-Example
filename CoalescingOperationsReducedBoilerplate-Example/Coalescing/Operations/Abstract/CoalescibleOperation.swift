@@ -81,25 +81,12 @@ class CoalescibleOperation: Operation {
     
     // MARK: - Coalesce
     
-    /* Here we are coalescing our operations together. */
-    
     func coalesce(operation: CoalescibleOperation) {
-        
-        /* First we create local variables holding the current operations completion closure and the to-be-coalesced operations completion closure (initalCompletionClosure contains the closure’s of any previously coalesced operations).
-         
-         We do so because we are going to override the current operations completion closure with a new closure containing calls to both the closure’s now be held in local variables.
-         */
-        
         let initalCompletionClosure = self.completion
         let additionalCompletionClosure = operation.completion
         
-        /* When this closure is triggered, any nested closures (those held in initalCompletionClosure) will be executed so ensuring that we can coalesce more than two operations. What’s important to note that this method will handle situations were an operation hasn’t provided a completion closure and the other operation has.
-         */
-        
         self.completion = {(successful) in
-            
-            /* Inside the closure, we check that each closure actually exists (these closure’s are optional) and if they exist we trigger them. */
-            
+
             if let initalCompletionClosure = initalCompletionClosure {
                 initalCompletionClosure(successful)
             }
