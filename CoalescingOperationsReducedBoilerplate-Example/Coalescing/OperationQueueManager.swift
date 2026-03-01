@@ -32,12 +32,13 @@ final class DefaultOperationQueueManager: OperationQueueManager {
     // MARK: - Enqueue
     
     func enqueue<T: Operation & CoalescibleOperation>(operation: T) {
-        guard let matchingOperation = matchingCoalescibleOperation(for: operation) else {
-            queue.addOperation(operation)
-            return
+        if let matchingOperation = matchingCoalescibleOperation(for: operation) {
+            if matchingOperation.coalesce(operation: AnyCoalescibleOperation(operation)) {
+                return
+            }
         }
         
-        matchingOperation.coalesce(operation: AnyCoalescibleOperation(operation))
+        queue.addOperation(operation)
     }
     
     private func matchingCoalescibleOperation<T: CoalescibleOperation>(for operation: T) -> AnyCoalescibleOperation<T.Value>? {

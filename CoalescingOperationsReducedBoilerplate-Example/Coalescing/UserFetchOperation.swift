@@ -8,7 +8,7 @@
 
 import Foundation
 
-class UserFetchOperation: DefaultCoalescibleOperation<Bool>, @unchecked Sendable {
+final class UserFetchOperation: DefaultCoalescibleOperation<Bool>, @unchecked Sendable {
     // MARK: - Init
     
     init(completionHandler: @escaping  (_ result: Result<Bool, Error>) -> Void) {

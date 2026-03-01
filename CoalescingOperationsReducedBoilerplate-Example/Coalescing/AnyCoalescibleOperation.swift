@@ -17,7 +17,7 @@ struct AnyCoalescibleOperation<Value> {
     private let _completionHandler: () -> ((_ result: Result<Value, Error>) -> Void)
     private let _callBackQueue: () -> OperationQueue
     private let _finish: (Result<Value, Error>) -> Void
-    private let _coalesce: (AnyCoalescibleOperation<Value>) -> Void
+    private let _coalesce: (AnyCoalescibleOperation<Value>) -> Bool
     private let _unwrap: () -> AnyObject
     
     // MARK: - Init
@@ -37,7 +37,7 @@ struct AnyCoalescibleOperation<Value> {
         _finish(result)
     }
     
-    func coalesce(operation: AnyCoalescibleOperation<Value>) {
+    func coalesce(operation: AnyCoalescibleOperation<Value>) -> Bool {
         _coalesce(operation)
     }
     

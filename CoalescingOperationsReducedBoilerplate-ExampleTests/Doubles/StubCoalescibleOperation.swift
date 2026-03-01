@@ -21,6 +21,8 @@ final class StubCoalescibleOperation<T>: Operation, CoalescibleOperation, @unche
     let completionHandler: (Result<T, Error>) -> Void
     let callBackQueue: OperationQueue
     
+    var coalesceToBeReturned = true
+    
     init(identifier: String = "test_identifier",
          callBackQueue: OperationQueue = .main,
          completionHandler: @escaping (_ result: Result<T, Error>) -> Void = { _ in }) {
@@ -33,8 +35,10 @@ final class StubCoalescibleOperation<T>: Operation, CoalescibleOperation, @unche
         events.append(.finish(result))
     }
     
-    func coalesce(operation: AnyCoalescibleOperation<T>) {
+    func coalesce(operation: AnyCoalescibleOperation<T>) -> Bool {
         events.append(.coalesce(operation))
+        
+        return coalesceToBeReturned
     }
 }
 

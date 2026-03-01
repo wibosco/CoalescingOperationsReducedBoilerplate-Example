@@ -16,7 +16,7 @@ protocol CoalescibleOperation {
     var callBackQueue: OperationQueue { get }
     
     func finish(result: Result<Value, Error>)
-    func coalesce(operation: AnyCoalescibleOperation<Value>)
+    func coalesce(operation: AnyCoalescibleOperation<Value>) -> Bool
 }
 
 enum CoalescibleOperationError: Error, Equatable {
@@ -27,6 +27,8 @@ class DefaultCoalescibleOperation<Value>: Operation, CoalescibleOperation, @unch
     let identifier: String
     private(set) var completionHandler: (_ result: Result<Value, Error>) -> Void
     let callBackQueue: OperationQueue
+    
+    private let lock = NSRecursiveLock()
     
     // MARK: - Init
     
@@ -48,14 +50,29 @@ class DefaultCoalescibleOperation<Value>: Operation, CoalescibleOperation, @unch
         case finished = "isFinished"
     }
     
-    private var state = State.ready {
+    private var _state = State.ready {
         willSet {
             willChangeValue(forKey: newValue.rawValue)
-            willChangeValue(forKey: state.rawValue)
+            willChangeValue(forKey: _state.rawValue)
         }
         didSet {
             didChangeValue(forKey: oldValue.rawValue)
-            didChangeValue(forKey: state.rawValue)
+            didChangeValue(forKey: _state.rawValue)
+        }
+    }
+    
+    private var state: State {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            
+            return _state
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            
+            _state = newValue
         }
     }
     
@@ -89,6 +106,9 @@ class DefaultCoalescibleOperation<Value>: Operation, CoalescibleOperation, @unch
     }
     
     func finish(result: Result<Value, Error>) {
+        lock.lock()
+        defer { lock.unlock() }
+        
         guard !isFinished else {
             return
         }
@@ -108,7 +128,14 @@ class DefaultCoalescibleOperation<Value>: Operation, CoalescibleOperation, @unch
     
     // MARK: - Coalesce
     
-    func coalesce(operation: AnyCoalescibleOperation<Value>) {
+    func coalesce(operation: AnyCoalescibleOperation<Value>) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        
+        guard !isFinished else {
+            return false
+        }
+        
         let initialCompletionClosure = self.completionHandler
         let additionalCompletionClosure = operation.completionHandler
         let additionalCallBackQueue = operation.callBackQueue
@@ -119,5 +146,7 @@ class DefaultCoalescibleOperation<Value>: Operation, CoalescibleOperation, @unch
                 additionalCompletionClosure(result)
             }
         }
+        
+        return true
     }
 }
