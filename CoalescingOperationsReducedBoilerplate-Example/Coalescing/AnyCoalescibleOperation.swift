@@ -16,7 +16,7 @@ struct AnyCoalescibleOperation<Value> {
     private let _identifier: () -> String
     private let _completionHandler: () -> ((_ result: Result<Value, Error>) -> Void)
     private let _callBackQueue: () -> OperationQueue
-    private let _complete: (Result<Value, Error>) -> Void
+    private let _finish: (Result<Value, Error>) -> Void
     private let _coalesce: (AnyCoalescibleOperation<Value>) -> Void
     private let _unwrap: () -> AnyObject
     
@@ -26,15 +26,15 @@ struct AnyCoalescibleOperation<Value> {
         _identifier = { concrete.identifier }
         _completionHandler = { concrete.completionHandler }
         _callBackQueue = { concrete.callBackQueue }
-        _complete = { concrete.complete(result: $0) }
+        _finish = { concrete.finish(result: $0) }
         _coalesce = { concrete.coalesce(operation: $0) }
         _unwrap = { concrete as AnyObject }
     }
     
     // MARK: - Actions
     
-    func complete(result: Result<Value, Error>) {
-        _complete(result)
+    func finish(result: Result<Value, Error>) {
+        _finish(result)
     }
     
     func coalesce(operation: AnyCoalescibleOperation<Value>) {

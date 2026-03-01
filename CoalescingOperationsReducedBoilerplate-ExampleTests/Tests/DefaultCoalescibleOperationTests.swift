@@ -47,11 +47,11 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
         XCTAssertFalse(operation.isCancelled)
     }
     
-    func test_givenOperationStarted_whenCompleted_thenIsExecuting() {
+    func test_givenOperationStarted_whenFinished_thenIsExecuting() {
         let operation = DefaultCoalescibleOperation<Bool>(identifier: "test_identifier") { _ in }
         
         operation.start()
-        operation.complete(result: .success(true))
+        operation.finish(result: .success(true))
         
         XCTAssertFalse(operation.isReady)
         XCTAssertFalse(operation.isExecuting)
@@ -79,7 +79,7 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
     
     // MARK: Complete
     
-    func test_givenSuccessResult_whenCompleted_thenCompletionHandlerCalledWithSuccess() {
+    func test_givenSuccessResult_whenFinished_thenCompletionHandlerCalledWithSuccess() {
         let callBackQueue = OperationQueue()
         
         let expectation = expectation(description: "completion called")
@@ -97,12 +97,12 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
         }
         
         operation.start()
-        operation.complete(result: .success(true))
+        operation.finish(result: .success(true))
         
         waitForExpectations(timeout: 1)
     }
     
-    func test_givenFailureResult_whenCompleted_thenCompletionHandlerCalledWithFailure() {
+    func test_givenFailureResult_whenFinished_thenCompletionHandlerCalledWithFailure() {
         let callBackQueue = OperationQueue()
         
         let expectation = expectation(description: "completion called")
@@ -120,30 +120,35 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
         }
         
         operation.start()
-        operation.complete(result: .failure(TestError.test))
+        operation.finish(result: .failure(TestError.test))
         
         waitForExpectations(timeout: 1)
     }
     
-    func test_givenOperationCancelled_whenCompleted_thenCompletionHandlerNotCalled() {
+    func test_givenOperationCancelled_whenFinished_thenCompletionHandlerCalled() {
         let callBackQueue = OperationQueue()
         
         let expectation = expectation(description: "completion called")
-        expectation.isInverted = true
         
         let operation = DefaultCoalescibleOperation<Bool>(identifier: "test_identifier",
-                                                            callBackQueue: callBackQueue) { _ in
+                                                            callBackQueue: callBackQueue) { result in
+            do {
+                _ = try result.get()
+                XCTFail("Expected to throw error")
+            } catch {
+                XCTAssertEqual((error as? CoalescibleOperationError), .cancelled)
+            }
+            
             expectation.fulfill()
         }
         
         operation.start()
         operation.cancel()
-        operation.complete(result: .success(true))
         
         waitForExpectations(timeout: 1)
     }
     
-    func test_givenNonCoalscedOperation_whenCompleted_thenCompletionHandlerCalledOnCorrectQueue() {
+    func test_givenNonCoalscedOperation_whenFinished_thenCompletionHandlerCalledOnCorrectQueue() {
         let callBackQueue = OperationQueue()
         callBackQueue.name = "test.callback.queue"
         
@@ -157,7 +162,7 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
         }
         
         operation.start()
-        operation.complete(result: .success("hello"))
+        operation.finish(result: .success("hello"))
         
         waitForExpectations(timeout: 1)
     }
@@ -227,7 +232,7 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
         operation1.coalesce(operation: AnyCoalescibleOperation(operation2))
         
         operation1.start()
-        operation1.complete(result: .success(true))
+        operation1.finish(result: .success(true))
         
         waitForExpectations(timeout: 1)
     }
@@ -265,12 +270,12 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
         operation1.coalesce(operation: AnyCoalescibleOperation(operation2))
         
         operation1.start()
-        operation1.complete(result: .failure(TestError.test))
+        operation1.finish(result: .failure(TestError.test))
         
         waitForExpectations(timeout: 1)
     }
 
-    func test_givenCoalscedOperationsWithDifferentCallBackQueues_whenCompleted_thenCompletionHandlersCalledOnOriginalQueues() {
+    func test_givenCoalscedOperationsWithDifferentCallBackQueues_whenFinished_thenCompletionHandlersCalledOnOriginalQueues() {
         let callBackQueue1 = OperationQueue()
         callBackQueue1.name = "test.callback.queue1"
         
@@ -297,7 +302,7 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
         operation1.coalesce(operation: AnyCoalescibleOperation(operation2))
         
         operation1.start()
-        operation1.complete(result: .success("shared"))
+        operation1.finish(result: .success("shared"))
         
         waitForExpectations(timeout: 1)
     }

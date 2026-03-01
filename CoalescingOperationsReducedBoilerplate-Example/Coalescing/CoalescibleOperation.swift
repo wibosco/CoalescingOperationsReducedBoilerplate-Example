@@ -15,11 +15,13 @@ protocol CoalescibleOperation {
     var completionHandler: (_ result: Result<Value, Error>) -> Void { get }
     var callBackQueue: OperationQueue { get }
     
-    func complete(result: Result<Value, Error>)
+    func finish(result: Result<Value, Error>)
     func coalesce(operation: AnyCoalescibleOperation<Value>)
 }
 
-// MARK: - DefaultCoalescibleOperation
+enum CoalescibleOperationError: Error, Equatable {
+    case cancelled
+}
 
 class DefaultCoalescibleOperation<Value>: Operation, CoalescibleOperation, @unchecked Sendable {
     let identifier: String
@@ -33,11 +35,7 @@ class DefaultCoalescibleOperation<Value>: Operation, CoalescibleOperation, @unch
          completionHandler: @escaping (_ result: Result<Value, Error>) -> Void) {
         self.identifier = identifier
         self.callBackQueue = callBackQueue
-        self.completionHandler = { result in
-            callBackQueue.addOperation {
-                completionHandler(result)
-            }
-        }
+        self.completionHandler = completionHandler
         
         super.init()
     }
@@ -81,33 +79,31 @@ class DefaultCoalescibleOperation<Value>: Operation, CoalescibleOperation, @unch
     
     override func start() {
         guard !isCancelled else {
-            finish()
+            finish(result: .failure(CoalescibleOperationError.cancelled))
             return
         }
         
-        if !isExecuting {
-            state = .executing
-        }
+        state = .executing
         
         main()
     }
     
-    private func finish() {
-        state = .finished
-    }
-    
-    func complete(result: Result<Value, Error>) {
-        finish()
+    func finish(result: Result<Value, Error>) {
+        guard !isFinished else {
+            return
+        }
         
-        if !isCancelled {
-            completionHandler(result)
+        state = .finished
+        
+        callBackQueue.addOperation {
+            self.completionHandler(result)
         }
     }
     
     override func cancel() {
         super.cancel()
         
-        finish()
+        finish(result: .failure(CoalescibleOperationError.cancelled))
     }
     
     // MARK: - Coalesce

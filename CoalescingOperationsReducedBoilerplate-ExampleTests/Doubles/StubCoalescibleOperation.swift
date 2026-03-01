@@ -11,7 +11,7 @@ import Foundation
 
 final class StubCoalescibleOperation<T>: Operation, CoalescibleOperation, @unchecked Sendable {
     enum Event {
-        case complete(Result<T, Error>)
+        case finish(Result<T, Error>)
         case coalesce(AnyCoalescibleOperation<T>)
     }
     
@@ -29,8 +29,8 @@ final class StubCoalescibleOperation<T>: Operation, CoalescibleOperation, @unche
         self.callBackQueue = callBackQueue
     }
     
-    func complete(result: Result<T, Error>) {
-        events.append(.complete(result))
+    func finish(result: Result<T, Error>) {
+        events.append(.finish(result))
     }
     
     func coalesce(operation: AnyCoalescibleOperation<T>) {

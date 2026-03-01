@@ -24,6 +24,6 @@ class UserFetchOperation: DefaultCoalescibleOperation<Bool>, @unchecked Sendable
         // Do work here
         sleep(5)
         
-        complete(result: .success(true))
+        finish(result: .success(true))
     }
 }
