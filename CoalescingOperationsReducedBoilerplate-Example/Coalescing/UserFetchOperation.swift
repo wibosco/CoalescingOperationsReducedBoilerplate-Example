@@ -12,7 +12,7 @@ class UserFetchOperation: DefaultCoalescibleOperation<Bool>, @unchecked Sendable
     // MARK: - Init
     
     init(completionHandler: @escaping  (_ result: Result<Bool, Error>) -> Void) {
-        super.init(identifier: "UserNetworkOperation",
+        super.init(identifier: "UserFetchOperation",
                    completionHandler: completionHandler)
     }
     
