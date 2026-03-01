@@ -8,11 +8,11 @@
 
 import Foundation
 
-class CoalescingExampleOperation: DefaultCoalescibleOperation<Bool>, @unchecked Sendable {
+class UserFetchOperation: DefaultCoalescibleOperation<Bool>, @unchecked Sendable {
     // MARK: - Init
     
     init(completionHandler: @escaping  (_ result: Result<Bool, Error>) -> Void) {
-        super.init(identifier: "CoalescingOperationExampleIdentifier",
+        super.init(identifier: "UserNetworkOperation",
                    completionHandler: completionHandler)
     }
     

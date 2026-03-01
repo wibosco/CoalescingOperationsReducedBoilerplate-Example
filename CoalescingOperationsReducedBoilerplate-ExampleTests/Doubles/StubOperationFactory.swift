@@ -9,20 +9,20 @@ import Foundation
 
 @testable import CoalescingOperationsReducedBoilerplate_Example
 
-final class StubCoalescingOperationFactory: CoalescingOperationFactory {
+final class StubOperationFactory: OperationFactory {
     enum Event {
         case createExampleOperation(((Result<Bool, Error>) -> Void))
     }
     
     private(set) var events: [Event] = []
     
-    var operation: CoalescingExampleOperation
+    var operation: UserFetchOperation
     
-    init(operation: CoalescingExampleOperation) {
+    init(operation: UserFetchOperation) {
         self.operation = operation
     }
     
-    func createExampleOperation(completionHandler: @escaping (_ result: Result<Bool, Error>) -> Void) -> CoalescingExampleOperation {
+    func createUserFetchOperation(completionHandler: @escaping (_ result: Result<Bool, Error>) -> Void) -> UserFetchOperation {
         events.append(.createExampleOperation(completionHandler))
         
         return operation

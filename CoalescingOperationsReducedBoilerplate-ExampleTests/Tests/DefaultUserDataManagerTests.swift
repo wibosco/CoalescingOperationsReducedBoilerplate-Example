@@ -11,11 +11,11 @@ import XCTest
 
 @testable import CoalescingOperationsReducedBoilerplate_Example
 
-final class DefaultCoalescingExampleManagerTests: XCTestCase {
+final class DefaultUserDataManagerTests: XCTestCase {
     private var queueManager: StubOperationQueueManager!
-    private var factory: StubCoalescingOperationFactory!
+    private var factory: StubOperationFactory!
     
-    private var sut: DefaultCoalescingExampleManager!
+    private var sut: DefaultUserDataManager!
     
     // MARK: - Lifecycle
     
@@ -23,9 +23,9 @@ final class DefaultCoalescingExampleManagerTests: XCTestCase {
         super.setUp()
         
         queueManager = StubOperationQueueManager()
-        factory = StubCoalescingOperationFactory(operation: CoalescingExampleOperation { _ in })
+        factory = StubOperationFactory(operation: UserFetchOperation { _ in })
         
-        sut = DefaultCoalescingExampleManager(queueManager: queueManager,
+        sut = DefaultUserDataManager(queueManager: queueManager,
                                               factory: factory)
     }
     
@@ -42,7 +42,7 @@ final class DefaultCoalescingExampleManagerTests: XCTestCase {
     // MARK: Add
     
     func test_addExampleCoalescingOperation_thenFactoryIsAskedToCreateOperation() {
-        sut.addExampleCoalescingOperation { _ in }
+        sut.fetchUser { _ in }
         
         XCTAssertEqual(factory.events.count, 1)
         
@@ -53,10 +53,10 @@ final class DefaultCoalescingExampleManagerTests: XCTestCase {
     }
     
     func test_addExampleCoalescingOperation_thenOperationFromFactoryIsEnqueued() {
-        let expectedOperation = CoalescingExampleOperation { _ in }
+        let expectedOperation = UserFetchOperation { _ in }
         factory.operation = expectedOperation
         
-        sut.addExampleCoalescingOperation { _ in }
+        sut.fetchUser { _ in }
         
         XCTAssertEqual(queueManager.events, [.enqueue(expectedOperation)])
     }
@@ -64,7 +64,7 @@ final class DefaultCoalescingExampleManagerTests: XCTestCase {
     func test_addExampleCoalescingOperation_thenCompletionHandlerIsPassedToFactory() {
         var completionCalled = false
         
-        sut.addExampleCoalescingOperation { _ in
+        sut.fetchUser { _ in
             completionCalled = true
         }
         
