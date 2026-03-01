@@ -8,11 +8,11 @@
 import Foundation
 
 protocol CoalescingOperationFactory {
-    func createExampleOperation(completionHandler: @escaping (_ result: Result<Bool, Error>) -> Void) -> any (Operation & CoalescibleOperation)
+    func createExampleOperation(completionHandler: @escaping (_ result: Result<Bool, Error>) -> Void) -> CoalescingExampleOperation
 }
 
 struct DefaultCoalescingOperationFactory: CoalescingOperationFactory {
-    func createExampleOperation(completionHandler: @escaping (Result<Bool, any Error>) -> Void) -> any (Operation & CoalescibleOperation) {
+    func createExampleOperation(completionHandler: @escaping (Result<Bool, Error>) -> Void) -> CoalescingExampleOperation {
         CoalescingExampleOperation(completionHandler: completionHandler)
     }
 }

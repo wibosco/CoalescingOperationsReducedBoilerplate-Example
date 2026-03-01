@@ -18,10 +18,10 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
     
     func test_givenIdentifierAndCompletionHandler_whenCreated_thenPropertiesAreSet() {
         let queue = OperationQueue()
-        let operation = DefaultCoalescibleOperation<Bool>(identifier: "test-op",
+        let operation = DefaultCoalescibleOperation<Bool>(identifier: "test_identifier",
                                                             callBackQueue: queue) { _ in }
         
-        XCTAssertEqual(operation.identifier, "test-op")
+        XCTAssertEqual(operation.identifier, "test_identifier")
         XCTAssertTrue(operation.callBackQueue === queue)
     }
     
@@ -160,7 +160,6 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
         operation.complete(result: .success("hello"))
         
         waitForExpectations(timeout: 1)
-
     }
     
     // MARK: Cancel
@@ -225,7 +224,7 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
             expectation2.fulfill()
         }
         
-        operation1.coalesce(operation: operation2)
+        operation1.coalesce(operation: AnyCoalescibleOperation(operation2))
         
         operation1.start()
         operation1.complete(result: .success(true))
@@ -263,7 +262,7 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
             expectation2.fulfill()
         }
         
-        operation1.coalesce(operation: operation2)
+        operation1.coalesce(operation: AnyCoalescibleOperation(operation2))
         
         operation1.start()
         operation1.complete(result: .failure(TestError.test))
@@ -295,7 +294,7 @@ final class DefaultCoalescibleOperationTests: XCTestCase {
             expectation2.fulfill()
         }
         
-        operation1.coalesce(operation: operation2)
+        operation1.coalesce(operation: AnyCoalescibleOperation(operation2))
         
         operation1.start()
         operation1.complete(result: .success("shared"))

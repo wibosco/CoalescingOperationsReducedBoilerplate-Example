@@ -32,19 +32,17 @@ final class DefaultOperationQueueManager: OperationQueueManager {
     // MARK: - Enqueue
     
     func enqueue<T: Operation & CoalescibleOperation>(operation: T) {
-        guard let existingCoalescibleOperation = existingCoalescibleOperationOnQueue(operation: operation) else {
+        if let existing = existingCoalescibleOperationOnQueue(for: operation) {
+            existing.coalesce(operation: AnyCoalescibleOperation(operation))
+        } else {
             queue.addOperation(operation)
-                
-            return
         }
-        
-        existingCoalescibleOperation.coalesce(operation: operation)
     }
-    
-    private func existingCoalescibleOperationOnQueue<T>(operation: some CoalescibleOperation<T>) -> (any CoalescibleOperation<T>)? {
+
+    private func existingCoalescibleOperationOnQueue<T: CoalescibleOperation>(for operation: T) -> AnyCoalescibleOperation<T.Value>? {
         queue.operations
             .lazy
-            .compactMap { $0 as? (any CoalescibleOperation<T>) }
+            .compactMap { ($0 as? AnyCoalescibleOperationConvertible)?.eraseToAnyCoalescibleOperation() as AnyCoalescibleOperation<T.Value>? }
             .first { $0.identifier == operation.identifier }
     }
 }

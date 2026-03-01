@@ -13,6 +13,7 @@ import XCTest
 
 final class DefaultOperationQueueManagerTests: XCTestCase {
     private var queue: StubCoalescibleOperationQueue!
+    
     private var sut: DefaultOperationQueueManager!
     
     // MARK: - Lifecycle
@@ -80,7 +81,7 @@ final class DefaultOperationQueueManagerTests: XCTestCase {
             return
         }
         
-        XCTAssertTrue(coalescedOperation as AnyObject === newOperation)
+        XCTAssertTrue(coalescedOperation.unwrap() === newOperation)
     }
     
     func test_givenMultipleMatchingOperations_whenEnqueued_thenFirstMatchIsCoalesced() {

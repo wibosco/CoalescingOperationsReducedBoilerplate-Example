@@ -11,14 +11,14 @@ import Foundation
 
 final class StubCoalescibleOperation<T>: Operation, CoalescibleOperation, @unchecked Sendable {
     enum Event {
-        case complete(Result<T, any Error>)
-        case coalesce(any CoalescibleOperation<T>)
+        case complete(Result<T, Error>)
+        case coalesce(AnyCoalescibleOperation<T>)
     }
     
     private(set) var events: [Event] = []
     
     let identifier: String
-    let completionHandler: (Result<T, any Error>) -> Void
+    let completionHandler: (Result<T, Error>) -> Void
     let callBackQueue: OperationQueue
     
     init(identifier: String = "test_identifier",
@@ -29,11 +29,21 @@ final class StubCoalescibleOperation<T>: Operation, CoalescibleOperation, @unche
         self.callBackQueue = callBackQueue
     }
     
-    func complete(result: Result<T, any Error>) {
+    func complete(result: Result<T, Error>) {
         events.append(.complete(result))
     }
     
-    func coalesce(operation: any CoalescibleOperation<T>) {
+    func coalesce(operation: AnyCoalescibleOperation<T>) {
         events.append(.coalesce(operation))
+    }
+}
+
+extension StubCoalescibleOperation: AnyCoalescibleOperationConvertible {
+    func eraseToAnyCoalescibleOperation<U>() -> AnyCoalescibleOperation<U>? {
+        guard let typed = self as? StubCoalescibleOperation<U> else {
+            return nil
+        }
+        
+        return AnyCoalescibleOperation(typed)
     }
 }

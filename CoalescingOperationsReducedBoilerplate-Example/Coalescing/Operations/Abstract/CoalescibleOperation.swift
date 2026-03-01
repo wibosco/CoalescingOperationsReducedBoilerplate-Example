@@ -8,27 +8,29 @@
 
 import Foundation
 
-protocol CoalescibleOperation<T> {
-    associatedtype T
-
+protocol CoalescibleOperation: AnyObject {
+    associatedtype Value
+    
     var identifier: String { get }
-    var completionHandler: (_ result: Result<T, Error>) -> Void { get }
+    var completionHandler: (_ result: Result<Value, Error>) -> Void { get }
     var callBackQueue: OperationQueue { get }
     
-    func complete(result: Result<T, Error>)
-    func coalesce(operation: any CoalescibleOperation<T>)
+    func complete(result: Result<Value, Error>)
+    func coalesce(operation: AnyCoalescibleOperation<Value>)
 }
 
-class DefaultCoalescibleOperation<T>: Operation, CoalescibleOperation, @unchecked Sendable {
+// MARK: - DefaultCoalescibleOperation
+
+class DefaultCoalescibleOperation<Value>: Operation, CoalescibleOperation, @unchecked Sendable {
     let identifier: String
-    private(set) var completionHandler: (_ result: Result<T, Error>) -> Void
+    private(set) var completionHandler: (_ result: Result<Value, Error>) -> Void
     let callBackQueue: OperationQueue
     
     // MARK: - Init
     
     init(identifier: String,
          callBackQueue: OperationQueue = OperationQueue.current ?? .main,
-         completionHandler: @escaping (_ result: Result<T, Error>) -> Void) {
+         completionHandler: @escaping (_ result: Result<Value, Error>) -> Void) {
         self.identifier = identifier
         self.callBackQueue = callBackQueue
         self.completionHandler = { result in
@@ -94,9 +96,9 @@ class DefaultCoalescibleOperation<T>: Operation, CoalescibleOperation, @unchecke
         state = .finished
     }
     
-    func complete(result: Result<T, Error>) {
+    func complete(result: Result<Value, Error>) {
         finish()
-    
+        
         if !isCancelled {
             completionHandler(result)
         }
@@ -110,16 +112,13 @@ class DefaultCoalescibleOperation<T>: Operation, CoalescibleOperation, @unchecke
     
     // MARK: - Coalesce
     
-    func coalesce(operation: any CoalescibleOperation<T>) {
+    func coalesce(operation: AnyCoalescibleOperation<Value>) {
         let initialCompletionClosure = self.completionHandler
-        let initialCallBackQueue = self.callBackQueue
         let additionalCompletionClosure = operation.completionHandler
         let additionalCallBackQueue = operation.callBackQueue
         
         self.completionHandler = { result in
-            initialCallBackQueue.addOperation {
-                initialCompletionClosure(result)
-            }
+            initialCompletionClosure(result)
             additionalCallBackQueue.addOperation {
                 additionalCompletionClosure(result)
             }

@@ -12,8 +12,9 @@ import XCTest
 @testable import CoalescingOperationsReducedBoilerplate_Example
 
 final class DefaultCoalescingExampleManagerTests: XCTestCase {
-    private var stubQueueManager: StubOperationQueueManager!
-    private var stubFactory: StubCoalescingOperationFactory!
+    private var queueManager: StubOperationQueueManager!
+    private var factory: StubCoalescingOperationFactory!
+    
     private var sut: DefaultCoalescingExampleManager!
     
     // MARK: - Lifecycle
@@ -21,17 +22,17 @@ final class DefaultCoalescingExampleManagerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        stubQueueManager = StubOperationQueueManager()
-        stubFactory = StubCoalescingOperationFactory(operation: StubCoalescibleOperation<Bool>())
+        queueManager = StubOperationQueueManager()
+        factory = StubCoalescingOperationFactory(operation: CoalescingExampleOperation { _ in })
         
-        sut = DefaultCoalescingExampleManager(queueManager: stubQueueManager,
-                                              factory: stubFactory)
+        sut = DefaultCoalescingExampleManager(queueManager: queueManager,
+                                              factory: factory)
     }
     
     override func tearDown() {
         sut = nil
-        stubFactory = nil
-        stubQueueManager = nil
+        factory = nil
+        queueManager = nil
         
         super.tearDown()
     }
@@ -43,21 +44,21 @@ final class DefaultCoalescingExampleManagerTests: XCTestCase {
     func test_addExampleCoalescingOperation_thenFactoryIsAskedToCreateOperation() {
         sut.addExampleCoalescingOperation { _ in }
         
-        XCTAssertEqual(stubFactory.events.count, 1)
+        XCTAssertEqual(factory.events.count, 1)
         
-        guard case .createExampleOperation = stubFactory.events.first else {
+        guard case .createExampleOperation = factory.events.first else {
             XCTFail("Expected createExampleOperation event")
             return
         }
     }
     
     func test_addExampleCoalescingOperation_thenOperationFromFactoryIsEnqueued() {
-        let expectedOperation = StubCoalescibleOperation<Bool>()
-        stubFactory.operation = expectedOperation
+        let expectedOperation = CoalescingExampleOperation { _ in }
+        factory.operation = expectedOperation
         
         sut.addExampleCoalescingOperation { _ in }
         
-        XCTAssertEqual(stubQueueManager.events, [.enqueue(expectedOperation)])
+        XCTAssertEqual(queueManager.events, [.enqueue(expectedOperation)])
     }
     
     func test_addExampleCoalescingOperation_thenCompletionHandlerIsPassedToFactory() {
@@ -67,7 +68,7 @@ final class DefaultCoalescingExampleManagerTests: XCTestCase {
             completionCalled = true
         }
         
-        guard case .createExampleOperation(let capturedHandler) = stubFactory.events.first else {
+        guard case .createExampleOperation(let capturedHandler) = factory.events.first else {
             XCTFail("Expected createExampleOperation event")
             return
         }

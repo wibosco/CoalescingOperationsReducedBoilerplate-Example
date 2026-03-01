@@ -16,13 +16,13 @@ final class StubCoalescingOperationFactory: CoalescingOperationFactory {
     
     private(set) var events: [Event] = []
     
-    var operation: any (Operation & CoalescibleOperation)
+    var operation: CoalescingExampleOperation
     
-    init(operation: (any Operation & CoalescibleOperation)) {
+    init(operation: CoalescingExampleOperation) {
         self.operation = operation
     }
     
-    func createExampleOperation(completionHandler: @escaping (_ result: Result<Bool, Error>) -> Void) -> any (Operation & CoalescibleOperation) {
+    func createExampleOperation(completionHandler: @escaping (_ result: Result<Bool, Error>) -> Void) -> CoalescingExampleOperation {
         events.append(.createExampleOperation(completionHandler))
         
         return operation
