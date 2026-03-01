@@ -9,7 +9,6 @@
 import Foundation
 
 class CoalescingExampleOperation: DefaultCoalescibleOperation<Bool>, @unchecked Sendable {
-    
     // MARK: - Init
     
     init(completionHandler: @escaping  (_ result: Result<Bool, Error>) -> Void) {

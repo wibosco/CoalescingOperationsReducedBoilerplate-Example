@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol CoalescibleOperation: AnyObject {
+protocol CoalescibleOperation {
     associatedtype Value
     
     var identifier: String { get }

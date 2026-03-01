@@ -11,12 +11,12 @@ import Foundation
 protocol AnyCoalescibleOperationConvertible {
     var identifier: String { get }
     
-    func eraseToAnyCoalescibleOperation<U>() -> AnyCoalescibleOperation<U>?
+    func eraseToAnyCoalescibleOperation<TargetValue>() -> AnyCoalescibleOperation<TargetValue>?
 }
 
 extension DefaultCoalescibleOperation: AnyCoalescibleOperationConvertible {
-    func eraseToAnyCoalescibleOperation<U>() -> AnyCoalescibleOperation<U>? {
-        guard let typed = self as? DefaultCoalescibleOperation<U> else {
+    func eraseToAnyCoalescibleOperation<TargetValue>() -> AnyCoalescibleOperation<TargetValue>? {
+        guard let typed = self as? DefaultCoalescibleOperation<TargetValue> else {
             return nil
         }
         

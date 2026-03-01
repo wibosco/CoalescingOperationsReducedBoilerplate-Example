@@ -8,21 +8,21 @@
 
 import Foundation
 
-struct AnyCoalescibleOperation<T> {
+struct AnyCoalescibleOperation<Value> {
     var identifier: String { _identifier() }
-    var completionHandler: (_ result: Result<T, Error>) -> Void { _completionHandler() }
+    var completionHandler: (_ result: Result<Value, Error>) -> Void { _completionHandler() }
     var callBackQueue: OperationQueue { _callBackQueue() }
     
     private let _identifier: () -> String
-    private let _completionHandler: () -> ((_ result: Result<T, Error>) -> Void)
+    private let _completionHandler: () -> ((_ result: Result<Value, Error>) -> Void)
     private let _callBackQueue: () -> OperationQueue
-    private let _complete: (Result<T, Error>) -> Void
-    private let _coalesce: (AnyCoalescibleOperation<T>) -> Void
+    private let _complete: (Result<Value, Error>) -> Void
+    private let _coalesce: (AnyCoalescibleOperation<Value>) -> Void
     private let _unwrap: () -> AnyObject
     
     // MARK: - Init
     
-    init<Concrete: CoalescibleOperation>(_ concrete: Concrete) where Concrete.Value == T {
+    init<ConcreteOperation: CoalescibleOperation>(_ concrete: ConcreteOperation) where ConcreteOperation.Value == Value {
         _identifier = { concrete.identifier }
         _completionHandler = { concrete.completionHandler }
         _callBackQueue = { concrete.callBackQueue }
@@ -33,11 +33,11 @@ struct AnyCoalescibleOperation<T> {
     
     // MARK: - Actions
     
-    func complete(result: Result<T, Error>) {
+    func complete(result: Result<Value, Error>) {
         _complete(result)
     }
     
-    func coalesce(operation: AnyCoalescibleOperation<T>) {
+    func coalesce(operation: AnyCoalescibleOperation<Value>) {
         _coalesce(operation)
     }
     
