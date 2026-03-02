@@ -22,6 +22,7 @@ protocol OperationQueueManager {
 
 final class DefaultOperationQueueManager: OperationQueueManager {
     private let queue: CoalescibleOperationQueue
+    private let lock = NSLock()
     
     // MARK: - Init
     
@@ -32,6 +33,9 @@ final class DefaultOperationQueueManager: OperationQueueManager {
     // MARK: - Enqueue
     
     func enqueue<T: Operation & CoalescibleOperation>(operation: T) {
+        lock.lock()
+        defer { lock.unlock() }
+        
         if let matchingOperation = matchingCoalescibleOperation(for: operation) {
             if matchingOperation.coalesce(operation: AnyCoalescibleOperation(operation)) {
                 return
