@@ -4,4 +4,4 @@
 
 
 # CoalescingOperationsReducedBoilerplate-Example
-An example project to show how it's possible to coalesce `NSOperation` instances to reduce duplicate work, as shown in this post - https://williamboles.com/removing-bolierplate-when-coalescing-nsoperations/
+An example project to show how it's possible to coalesce `Operation` instances to reduce duplicate work, as shown in this post - https://williamboles.com/coalescing-operations-to-avoid-duplicated-work/
